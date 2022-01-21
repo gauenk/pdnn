@@ -60,8 +60,11 @@ for exp_num,config in enumerate(experiments):
         results = pdnn.exec_learn(config)
         cache.save_exp(uuid,config,results) # save to cache
 
+print("Training models are complete!")
+
 # -- (4) print results! --
 records = cache.load_flat_records(experiments)
+print("\n\n\n\n")
 print("Available Fields to Inspect:")
 print(list(records.columns))
 
