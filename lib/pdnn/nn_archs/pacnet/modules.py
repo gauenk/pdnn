@@ -28,14 +28,17 @@ class SepConvFM2D(nn.Module):
     def __init__(self, l_ind):
         super(SepConvFM2D, self).__init__()
 
-        if 0 == l_ind:
-            self.f_in = 150
-        else:
-            self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
+        self.f_in = 6
+        # if 0 == l_ind:
+        #     self.f_in = 150
+        # else:
+        #     self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
 
-        self.f_out = max(math.ceil(self.f_in / 2), 150)
+        # self.f_out = max(math.ceil(self.f_in / 2), 150)
+        self.f_out = 6
         self.n_in = math.ceil(15 / (2 ** l_ind))
         self.n_out = math.ceil(self.n_in / 2)
+
         self.vh_groups = (self.f_in // 3) * self.n_in
         self.f_groups = self.n_in
         self.n_groups = self.f_out
@@ -66,7 +69,8 @@ class SepConvOut2D(nn.Module):
     def __init__(self, l_ind):
         super(SepConvOut2D, self).__init__()
 
-        self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
+        self.f_in = 6
+        # self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
         self.vh_groups = self.f_in // 3
         self.conv_vh = nn.Conv2d(in_channels=self.f_in, out_channels=self.f_in,
                                  kernel_size=(7, 7), bias=False, groups=self.vh_groups)
@@ -135,13 +139,13 @@ class SepConvOutB2D(nn.Module):
 
 
 class SepConvNet2D(nn.Module):
-    def __init__(self):
+    def __init__(self,nlayers=4):
         super(SepConvNet2D, self).__init__()
 
         self.sep_conv_block0 = SepConvReF2D()
-        for i in range(1, 4):
+        for i in range(1, nlayers):
             self.add_module('sep_conv_block{}'.format(i), SepConvBnReM2D(i))
-        self.add_module('sep_conv_block{}'.format(4), SepConvOutB2D(4))
+        self.add_module('sep_conv_block{}'.format(nlayers+1), SepConvOutB2D(nlayers+1))
 
     def forward(self, x_f):
         for name, layer in self.named_children():

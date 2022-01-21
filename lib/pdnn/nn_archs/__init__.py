@@ -18,7 +18,7 @@ def get_nn_model(cfg,nn_arch):
 def get_sepnn_model(cfg):
 
     # -- init model --
-    model = SepConvNet2D()
+    model = SepConvNet2D(4)
     model = model.to(cfg.gpuid,non_blocking=True)
     loss_fxn_base = nn.MSELoss()
     loss_fxn_base = loss_fxn_base.to(cfg.gpuid,non_blocking=True)
@@ -27,9 +27,13 @@ def get_sepnn_model(cfg):
 
     # -- create closure for loss --
     def wrap_loss_fxn(denoised,gt_img,denoised_frames,step):
+        # print(denoised.min().item(),denoised.max().item())
+        # print(gt_img.min().item(),gt_img.max().item())
+        # print("denoised.shape: " ,denoised.shape)
+        # print("gt_img.shape: " ,gt_img.shape)
         gt_img_nmlz = gt_img - 0.5#gt_img.mean()
-        loss_basic,loss_anneal = loss_fxn_base(denoised_frames,denoised,gt_img_nmlz,step)
-        return loss_basic + loss_anneal
+        loss = loss_fxn_base(denoised,gt_img_nmlz)
+        return loss
     loss_fxn = wrap_loss_fxn
 
     # -- create empty scheduler --
@@ -39,7 +43,9 @@ def get_sepnn_model(cfg):
     # -- wrap call function for interface --
     forward_fxn = model.forward
     def wrap_forward(dyn_noisy,noise_level):
+        # print("dyn_noisy.shape: ",dyn_noisy.shape)
         deno = forward_fxn(dyn_noisy)
+        # print("deno.shape: ",deno.shape)
         return deno
     model.forward = wrap_forward
 

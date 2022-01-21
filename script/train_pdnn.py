@@ -24,8 +24,11 @@ cache.clear() # optionally reset values
 #
 
 exps = {"noise_level":[10.,25.,50.],
-        "batch_size": [10],
-        "nepochs": [10],
+        "ps": [13],
+        "npatches":[2],
+        "nneigh":[15],
+        "batch_size": [4],
+        "nepochs": [3],
         "nn_arch":["sepnn"],
         "dataset":["davis"]}
 experiments = cache_io.mesh_pydicts(exps)

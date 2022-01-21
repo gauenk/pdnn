@@ -30,6 +30,16 @@ def remove_center_frame(frames):
     nc_frames =torch.cat([frames[:nframes//2],frames[nframes//2+1:]],dim=0)
     return nc_frames
 
+# def remove_center_frame(burst):
+#     nframes = burst.shape[0]
+#     ref = nframes//2
+#     left,right = burst[:ref],burst[ref+1:]
+#     if torch.is_tensor(burst):
+#         burst = torch.cat([left,right],dim=0)
+#     else:
+#         burst = np.concatenate([left,right],axis=0)
+#     return burst
+
 def compute_pair_flow_acc(guess,gt):
     nimages,npix,nframes_m1,two = guess.shape
     guess = guess.cpu()

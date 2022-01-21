@@ -27,13 +27,13 @@ from .common import save_model_checkpoint,resume_training
 from .utils import *
 from .msgs import *
 from .trte import train_loop,test_loop
-
+from .results_format import append_result_to_dict
 
 def exec_learn(cfg):
 
     # -- init exp! --
     init_config(cfg)
-    print("RUNNING Exp: [UNSUP DENOISING] Compare to Competitors")
+    print("Running Exp: [PDNNN] Training/Testing Model ")
     print(cfg)
     cfg.epoch = -1
     cfg.global_step = -1
@@ -60,6 +60,8 @@ def exec_learn(cfg):
     start_epoch,results = resume_training(cfg, model, optim, argdict)
     print(f"Starting from epoch [{start_epoch}]")
 
+    result_te = test_loop(cfg,model,loaders.te,loss_fxn,-1)
+
     # -- iterate over images --
     start_time = time.perf_counter()
     for epoch in range(start_epoch,cfg.nepochs):
@@ -70,13 +72,13 @@ def exec_learn(cfg):
         sched_fxn(epoch,argdict)
         result_tr = train_loop(cfg,model,loss_fxn,optim,loaders.tr)
         append_result_to_dict(results,result_tr)
+        if epoch % cfg.save_interval == 0:
+            save_model_checkpoint(cfg, model, optim, results, argdict)
         if epoch % cfg.test_interval == 0:
             result_te = test_loop(cfg,model,loaders.te,loss_fxn,epoch)
             append_result_to_dict(results,result_te)
-        if epoch % cfg.save_interval == 0:
-            save_model_checkpoint(cfg, model, optim, argdict, results)
     result_te = test_loop(cfg,model,loaders.te,loss_fxn,epoch)
-    save_model_checkpoint(cfg, model, optim, argdict)
+    save_model_checkpoint(cfg, model, optim, results, argdict)
     append_result_to_dict(results,result_te)
     runtime = time.perf_counter() - start_time
 
@@ -98,11 +100,18 @@ def init_config(cfg):
     # -- set frame size --
     assert not('frame_size' in cfg)
     # cfg.frame_size = [480,854]
+    # cfg.frame_size = [128,128]
     cfg.frame_size = [128,128]
 
     # -- set pid, if not already set --
     cproc = current_process()
     if not('pid' in cfg): cfg.pid = cproc.pid
+
+    # -- set log info --
+    cfg.train_log_interval = 1
+    cfg.test_log_interval = 1
+    cfg.test_interval = 10
+    cfg.save_interval = 1
 
     # -- reset sys.out if subprocess --
     cproc = current_process()

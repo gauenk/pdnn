@@ -11,14 +11,24 @@ from .learn import exec_learn
 
 Coding Wants:
 
-1. apply PDNN to denoise a subset of patches, with shape (B,N,T,C,H,W):
-   e.g. denoised = some_function(model,patches)
-2. convert a image bursts to training patches
+1. convert a image bursts to training patches
    e.g. inputs,target = some_function(images)
+   -> complete draft.
+   -> we kind of don't use the "sepconv" n x f x ... concept;
+      -> we do not add the patch content along "f"
+         -> however, we DO use "pt" along "f".. maybe justifiable
+      -> alt idea: maybe we should use an "image" of size X x Y and
+         then add the patch features as PaCNet does?
+
+2. apply PDNN to denoise a subset of patches, with shape (B,N,T,C,H,W):
+   e.g. denoised = some_function(model,patches)
+
 3. we want "hooks" into the patch subsetting problem, asap
    e.g. each iteration we can see how well our subsetting is getting.
+
 4. we want to stratify results across the patch content,
    e.g. "stripy" v.s. "curvy" v.s. "text" types of patches
+   -> kind-of check this off; we can do edges
 
 Choice Justification:
 
