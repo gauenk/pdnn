@@ -18,7 +18,7 @@ from pdnn.patching import get_train_io
 # -- local imports --
 from .log import get_train_log_info,print_train_log_info,get_test_log_info
 
-def train_loop(cfg,model,loss_fxn,optim,data_loader):
+def train_loop(cfg,model,loss_fxn,optim,data_loader,epoch):
 
     tr_info = []
     # nbatches = len(data_loader)
@@ -94,6 +94,7 @@ def train_loop(cfg,model,loss_fxn,optim,data_loader):
             info['batch_iter'] = batch_iter
             info['mode'] = 'train'
             info['loss'] = loss.item()
+            info['epoch'] = epoch
             print_train_log_info(info,nbatches)
 
             # -- save example to inspect --
@@ -177,6 +178,7 @@ def test_loop(cfg,model,test_loader,loss_fxn,epoch):
             info['batch_iter'] = batch_iter
             info['mode'] = 'test'
             info['loss'] = loss.item()
+            info['epoch'] = epoch
             te_info.append(info)
 
             # -- print to screen --

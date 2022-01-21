@@ -70,7 +70,7 @@ def exec_learn(cfg):
         print("-"*25)
         cfg.epoch = epoch
         sched_fxn(epoch,argdict)
-        result_tr = train_loop(cfg,model,loss_fxn,optim,loaders.tr)
+        result_tr = train_loop(cfg,model,loss_fxn,optim,loaders.tr,epoch)
         append_result_to_dict(results,result_tr)
         if epoch % cfg.save_interval == 0:
             save_model_checkpoint(cfg, model, optim, results, argdict)

@@ -1,5 +1,8 @@
 
 
+# -- python --
+import numpy as np
+
 # -- patch-based deep neural network --
 import pdnn
 
@@ -17,7 +20,7 @@ verbose = False
 cache_root = ".cache_io"
 cache_name = "example"
 cache = cache_io.ExpCache(cache_root,cache_name)
-cache.clear() # optionally reset values
+# cache.clear() # optionally reset values
 
 #
 # -- (2) Load An Meshgrid of Python Dicts: each describe an experiment --
@@ -59,6 +62,42 @@ for exp_num,config in enumerate(experiments):
 
 # -- (4) print results! --
 records = cache.load_flat_records(experiments)
-print(records.columns)
-print(records[['accuracy','precision','dataset','nn_arch','noise_level']])
+print("Available Fields to Inspect:")
+print(list(records.columns))
+
+# -- (5) inspect results by noise level --
+print("\n\n\n\n")
+print("Inspect by noise level")
+print("\n\n")
+for std,nrecord in records.groupby("noise_level"):
+
+    # -- banner --
+    print("-"*30)
+    print("--- Results @ [std = %d] ---" % int(std))
+    print("-"*30)
+
+    # -- print results from last few global steps --
+    giters = np.unique(nrecord["global_iter"].to_numpy())
+    gs_perc90 = np.quantile(giters,.9)
+    info = nrecord[nrecord["global_iter"] >= gs_perc90]
+
+    # -- split train and test --
+    train_info = nrecord[nrecord["mode"] == "train"]
+    test_info = nrecord[nrecord["mode"] == "test"]
+
+    # -- print psnrs info --
+    tr_psnrs = np.stack(train_info['image_psnrs'].to_numpy())
+    te_psnrs = np.stack(test_info['image_psnrs'].to_numpy())
+    tr_psnrs_mean,tr_psnrs_std = tr_psnrs.mean(),tr_psnrs.std()
+    te_psnrs_mean,te_psnrs_std = te_psnrs.mean(),te_psnrs.std()
+    print("[PSNRS.tr]: %2.2f +/- %2.2f" % (tr_psnrs_mean,tr_psnrs_std))
+    print("[PSNRS.te]: %2.2f +/- %2.2f" % (te_psnrs_mean,te_psnrs_std))
+
+    # -- print patch subset info --
+    # tr_psub = np.stack(train_info['patch_subset'].to_numpy())
+    # te_psub = np.stack(test_info['patch_subset'].to_numpy())
+    # tr_psub_mean,tr_psub_std = tr_psub.mean(),tr_psub.std()
+    # te_psub_mean,te_psub_std = te_psub.mean(),te_psub.std()
+    # print("%2.2f +/- %2.2f" % (tr_psub_mean,tr_psub_std))
+    # print("%2.2f +/- %2.2f" % (te_psub_mean,te_psub_std))
 
