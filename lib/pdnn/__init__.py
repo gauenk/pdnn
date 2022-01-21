@@ -39,6 +39,7 @@ Choice Justification:
    and some architectures (e.g. resnet) don't work for smaller patches
 -> leveraging non-local information requires creating an entire image
    to denoise the patches, but in our case we only want to patches denoised.
+   -> advocating for the "right tool for the right job" perspective
 
 - we have to pick a number of patches to jointly denoise:
 -> do we denoise all of them or just one?
@@ -51,9 +52,14 @@ Choice Justification:
    -> since the goal is to specify a subset of patches to be used in VNLB
       it seems this choice should somehow related to the "beam search" code...
       -> this is not needed if we have (*) above.
+      -> or rather (**) below
+   -> PaCNet comes shipped using 15 patches... we can just reference their
+      results to justify our choice
 
 - we have to pick a resolution:
 -> 32x32 v.s. 7x7 v.x. 15x15?
+   -> again, since we use SepConv from PaCNet we can merely state 13x13
+      because our reference uses a 13x13 patch.
 -> what is the denoising quality result w.r.t a cropped version of each type?
 -> how does this resolution relate to the bias of non-local methods?
 -> how does this resolution impact the subseting of the non-local method
@@ -61,6 +67,5 @@ Choice Justification:
 - we want to vary the "denoising resolution" and the "sorting resolution"
 -> denoise a 15x15 and only use the 7x7 for sorting
 -> do we only predict the interior? no. this is not standard so we don't need to.
-
 
 """
