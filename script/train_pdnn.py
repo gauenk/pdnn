@@ -32,7 +32,7 @@ exps = {"noise_level":[30.,50.],
         "npatches":[2],
         "nneigh":[15],
         "batch_size": [4],
-        "nepochs": [3],
+        "nepochs": [30],
         "nn_arch":["sepnn"],
         "dataset":["davis"],
         # --  cache info for each exp --

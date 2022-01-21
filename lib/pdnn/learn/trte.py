@@ -25,7 +25,7 @@ def train_loop(cfg,model,loss_fxn,optim,data_loader):
     # nbatches = 500
     data_iter = iter(data_loader)
     # nbatches = min(1000,len(data_iter))
-    nbatches = 2
+    nbatches = 100
     # for batch_iter,sample in enumerate(data_loader):
     for batch_iter in range(nbatches):
 
@@ -126,9 +126,8 @@ def test_loop(cfg,model,test_loader,loss_fxn):
     model = model.to(cfg.device)
     test_iter = iter(test_loader)
     # nbatches = min(500,len(test_iter))
-    nbatches = 2
-    psnrs = np.zeros( ( nbatches, cfg.batch_size ) )
-    use_record = False
+    nbatches = 20
+    # nbatches = 2
     te_info = []
 
     with torch.no_grad():

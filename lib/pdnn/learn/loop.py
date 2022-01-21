@@ -123,10 +123,10 @@ def init_config(cfg):
     if not('pid' in cfg): cfg.pid = cproc.pid
 
     # -- set log info --
-    cfg.train_log_interval = 1
-    cfg.test_log_interval = 1
+    cfg.train_log_interval = 20
+    cfg.test_log_interval = 10
     cfg.test_interval = 10
-    cfg.save_interval = 1
+    cfg.save_interval = 5
 
     # -- reset sys.out if subprocess --
     cproc = current_process()
