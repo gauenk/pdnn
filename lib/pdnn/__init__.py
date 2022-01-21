@@ -4,7 +4,7 @@ PDNN: Patch-based Denoising Neural Network
 
 """
 
-from .learn import exec_learn
+from .learn import exec_learn,load_model
 
 
 """
@@ -29,6 +29,8 @@ Coding Wants:
 4. we want to stratify results across the patch content,
    e.g. "stripy" v.s. "curvy" v.s. "text" types of patches
    -> kind-of check this off; we can do edges
+
+5. inspect results
 
 Choice Justification:
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from cache_io import compare_config
 
 def create_argdict(cfg, model, optimizer, argdict):
+    print(cfg.cache_root)
     CACHE_ROOT = Path(cfg.cache_root)
     UUID = cfg.uuid
     argdict['log_dir'] = CACHE_ROOT / "pytorch_models" / UUID
@@ -17,12 +18,15 @@ def create_argdict(cfg, model, optimizer, argdict):
     return argdict
 
 def resume_training(cfg, model, optimizer, argdict):
+    return load_checkpoint(cfg, model, optimizer, argdict, 'ckpt.pth')
+
+def load_checkpoint(cfg, model, optimizer, argdict, ckpt_fn):
     """
     Resumes previous training or starts anew
 
     """
     argdict = create_argdict(cfg, model, optimizer, argdict)
-    resumef = os.path.join(argdict['log_dir'], 'ckpt.pth')
+    resumef = os.path.join(argdict['log_dir'], ckpt_fn)
     if os.path.isfile(resumef):
         checkpoint = torch.load(resumef)
         print("> Resuming previous training")
@@ -35,7 +39,7 @@ def resume_training(cfg, model, optimizer, argdict):
 
         # -- exp config (should be same as "cfg") --
         exp_cfg = checkpoint['exp_cfg']
-        start_epoch = exp_cfg.epoch
+        start_epoch = exp_cfg.epoch+1
 
         # -- get results --
         results = checkpoint['results']
@@ -80,9 +84,14 @@ def save_model_checkpoint(cfg, model, optimizer, results, argdict):
         'args': argdict,
         'results': results
     }
-    torch.save(save_dict, os.path.join(argdict['log_dir'], 'ckpt.pth'))
+    filename = os.path.join(argdict['log_dir'], 'ckpt.pth')
+    torch.save(save_dict, filename)
+
     # -- write with epoch count for historic records --
-    torch.save(save_dict, os.path.join(argdict['log_dir'],
-                                       'ckpt_e{}.pth'.format(cfg.epoch+1)))
+    filename = os.path.join(argdict['log_dir'],'ckpt_e{}.pth'.format(cfg.epoch+1))
+    torch.save(save_dict, filename)
+
     del save_dict
+
+
 

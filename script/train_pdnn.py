@@ -1,6 +1,7 @@
 
 
-# -- python --
+# -- linalg --
+import torch as th
 import numpy as np
 
 # -- patch-based deep neural network --
@@ -26,14 +27,17 @@ cache = cache_io.ExpCache(cache_root,cache_name)
 # -- (2) Load An Meshgrid of Python Dicts: each describe an experiment --
 #
 
-exps = {"noise_level":[10.,25.,50.],
+exps = {"noise_level":[30.,50.],
         "ps": [13],
         "npatches":[2],
         "nneigh":[15],
         "batch_size": [4],
         "nepochs": [3],
         "nn_arch":["sepnn"],
-        "dataset":["davis"]}
+        "dataset":["davis"],
+        # --  cache info for each exp --
+        "cache_root":[cache_root]
+}
 experiments = cache_io.mesh_pydicts(exps)
 
 # -- (3) [Execute or Load] each Experiment --
@@ -55,8 +59,6 @@ for exp_num,config in enumerate(experiments):
     if results is None: # check if no result
         # -- append info to cache --
         config.uuid = uuid
-        config.cache_root = cache_root
-
         results = pdnn.exec_learn(config)
         cache.save_exp(uuid,config,results) # save to cache
 
@@ -68,7 +70,18 @@ print("\n\n\n\n")
 print("Available Fields to Inspect:")
 print(list(records.columns))
 
-# -- (5) inspect results by noise level --
+# -- (5) load a model by specifying a config  --
+config = experiments[0]
+config.uuid = cache.get_uuid(config)
+model_a = pdnn.load_model(config,epoch=-1) # most recent
+model_b = pdnn.load_model(config,epoch=3) # @ specific epoch
+delta = 0
+for param_a,param_b in zip(model_a.parameters(),model_b.parameters()):
+    data_a,data_b = param_a.data,param_b.data
+    delta += th.mean((data_a-data_b)**2)
+print("The two models are different, with [delta = %2.2e] " % delta)
+
+# -- (6) inspect results by noise level --
 print("\n\n\n\n")
 print("Inspect by noise level")
 print("\n\n")
