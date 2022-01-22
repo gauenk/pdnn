@@ -10,7 +10,7 @@ For image denoising with non-local methods, using the choice of which non-local 
 Install
 ----
 
-Installing this code is done using python's setup.py,
+Installing this code is done using a python setup.py in `lib/`,
 
 ```
 $ git clone git@github.com:gauenk/pdnn.git
