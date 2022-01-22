@@ -26,13 +26,13 @@ def get_sepnn_model(cfg):
     argdict = {}
 
     # -- create closure for loss --
-    def wrap_loss_fxn(denoised,gt_img,denoised_frames,step):
+    def wrap_loss_fxn(denoised,gt_img_01,denoised_frames,step):
         # print(denoised.min().item(),denoised.max().item())
         # print(gt_img.min().item(),gt_img.max().item())
         # print("denoised.shape: " ,denoised.shape)
         # print("gt_img.shape: " ,gt_img.shape)
-        gt_img_nmlz = gt_img - 0.5#gt_img.mean()
-        loss = loss_fxn_base(denoised,gt_img_nmlz)
+        gt_img = gt_img_01 - 0.5#gt_img.mean()
+        loss = loss_fxn_base(denoised,gt_img)
         return loss
     loss_fxn = wrap_loss_fxn
 
@@ -43,10 +43,20 @@ def get_sepnn_model(cfg):
     # -- wrap call function for interface --
     forward_fxn = model.forward
     def wrap_forward(dyn_noisy,noise_level):
-        # print("dyn_noisy.shape: ",dyn_noisy.shape)
-        deno = forward_fxn(dyn_noisy)
-        # print("deno.shape: ",deno.shape)
+
+
+        # -- add weights to ftrs --
+        in_weights = (dyn_noisy - dyn_noisy[:, 0:1, ...]) ** 2
+        b, n, f, v, h = in_weights.shape
+        in_weights = in_weights.view(b, n, f // 3, 3, v, h).mean(2)
+        inputs = torch.cat((dyn_noisy, in_weights), 2)
+
+        # -- forward pass --
+        res = forward_fxn(inputs)
+        deno = dyn_noisy[:,0] - res
+
         return deno
+
     model.forward = wrap_forward
 
     return model,loss_fxn,optimizer,scheduler_fxn,argdict

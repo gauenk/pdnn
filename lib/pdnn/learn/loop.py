@@ -23,17 +23,17 @@ from datasets import load_dataset
 from pdnn.nn_archs import get_nn_model
 
 # -- [local] package imports --
-from .common import save_model_checkpoint,resume_training,load_checkpoint
-from .utils import *
-from .msgs import *
 from .trte import train_loop,test_loop
 from .results_format import append_result_to_dict
+from .common import save_model_checkpoint,resume_training,load_checkpoint
+from .msgs import *
+from .utils import *
 
 def exec_learn(cfg):
 
     # -- init exp! --
     cfg = init_config(cfg)
-    print("Running Exp: [PDNNN] Training/Testing Model ")
+    print("Running Exp: [PDNNN] Training/Testing Model [PID: %s]" % cfg.pid)
     print(cfg)
 
     # -- set default device --
@@ -115,7 +115,6 @@ def init_config(cfg):
     # -- set frame size --
     assert not('frame_size' in cfg)
     # cfg.frame_size = [480,854]
-    # cfg.frame_size = [128,128]
     cfg.frame_size = [128,128]
 
     # -- set pid, if not already set --
@@ -127,6 +126,10 @@ def init_config(cfg):
     cfg.test_log_interval = 10
     cfg.test_interval = 10
     cfg.save_interval = 5
+
+    # -- train params --
+    cfg.nepochs = 60
+    cfg.nsearch = 100 # num of patches to select perms from
 
     # -- reset sys.out if subprocess --
     cproc = current_process()

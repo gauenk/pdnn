@@ -1,5 +1,4 @@
 
-
 # -- linalg --
 import torch as th
 import numpy as np
@@ -10,18 +9,39 @@ import pdnn
 # -- caching --
 import cache_io
 
-# -- load the data --
-import datasets
-
 #
 # -- (1) Init Experiment Cache  --
 #
 
+"""
+New goal: we want to train using the cascade of nearest neighbors
+not just the topK but the "topK+shift" as well.
+
+I suspect out model doesn't correctly handle the "non-iid"
+aspect of the images well
+
+maybe we can add a mechanism to address this..
+
+thinking...
+
+maybe each patch can retrieve its topk neighbors in the space
+and then we denoise each with their topk??
+here k = 15 from pacnet....
+
+testing with this yields...
+
+bad results.
+
+
+
+"""
+
 verbose = False
 cache_root = ".cache_io"
-cache_name = "example"
+cache_name = "v2"
 cache = cache_io.ExpCache(cache_root,cache_name)
 # cache.clear() # optionally reset values
+
 
 #
 # -- (2) Load An Meshgrid of Python Dicts: each describe an experiment --
@@ -29,16 +49,35 @@ cache = cache_io.ExpCache(cache_root,cache_name)
 
 exps = {"noise_level":[30.,50.],
         "ps": [13],
-        "npatches":[2],
+        "npatches":[30],
         "nneigh":[15],
         "batch_size": [4],
-        "nepochs": [30],
         "nn_arch":["sepnn"],
         "dataset":["davis"],
         # --  cache info for each exp --
         "cache_root":[cache_root]
 }
 experiments = cache_io.mesh_pydicts(exps)
+
+"""
+
+is an entry in the uuid_database created
+when a uuid is created?
+
+the goal is to re-read the uuid when a config has been
+passed through
+
+so an entry in the uuid database does not mean the "results"
+are computed.
+
+it merely means the assignment exists
+
+Do we use a uuid existing in the database as an indication the
+result has been computed? E.g. "results = None" only if there is
+no uuid?
+
+"""
+
 
 # -- (3) [Execute or Load] each Experiment --
 nexps = len(experiments)

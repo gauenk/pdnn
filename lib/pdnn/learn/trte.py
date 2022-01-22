@@ -13,7 +13,7 @@ from datasets.wrap_image_data import dict_to_device
 
 # -- project imports --
 from pdnn.utils.images import print_tensor_stats,save_image
-from pdnn.patching import get_train_io
+from pdnn.train_patches import io_patches,imgs2patches
 
 # -- local imports --
 from .log import get_train_log_info,print_train_log_info,get_test_log_info
@@ -55,13 +55,12 @@ def train_loop(cfg,model,loss_fxn,optim,data_loader):
         gt_info = {'clean':dyn_clean,#'flow':flow_gt,
                    'static_noisy':static_noisy,'isize':isize}
 
-        # -- create inputs and outputs --
-        pnoisy,pclean = get_train_io(noisy,clean,cfg.noise_level,
-                                     cfg.ps,cfg.npatches,cfg.nneigh)
+        # -- get patches --
+        pnoisy,pclean = imgs2patches(noisy,clean,cfg.noise_level,cfg.ps,
+                                     cfg.npatches,cfg.nsearch)
 
-        # -- shape for net --
-        inputs = rearrange(pnoisy,'b np nn t c h w -> (b np) nn (t c) h w')
-        target = rearrange(pclean[:,:,0,:1],'b np t c h w -> (b np) (t c) h w')
+        # -- create inputs and outputs --
+        inputs,targets = io_patches(pnoisy,pclean,cfg.noise_level,cfg.ps,cfg.nneigh)
 
         # -- reset gradient --
         model.zero_grad()
@@ -73,7 +72,7 @@ def train_loop(cfg,model,loss_fxn,optim,data_loader):
         else: pdeno,denoised_frames = output,None
 
         # -- compute loss --
-        loss = loss_fxn(pdeno,target,denoised_frames,cfg.global_step)
+        loss = loss_fxn(pdeno,targets,denoised_frames,cfg.global_step)
 
         # print("-"*20)
         # print_tensor_stats("denoised",denoised)
@@ -101,7 +100,7 @@ def train_loop(cfg,model,loss_fxn,optim,data_loader):
             pdeno = pdeno.detach()
             with torch.no_grad():
                 inputs = torch.clip(inputs,0,1)
-                target = torch.clip(target,0,1)
+                targets = torch.clip(targets,0,1)
                 pdeno = torch.clip(pdeno,0,1)
                 # save_image(f"inputs_{batch_iter}.png",pnoisy)
                 # save_image(f"target_{batch_iter}.png",pclean)
@@ -152,13 +151,12 @@ def test_loop(cfg,model,test_loader,loss_fxn):
             # -- modify inputs as needed --
             #
 
-            # -- create inputs and outputs --
-            pnoisy,pclean = get_train_io(noisy,clean,cfg.noise_level,
-                                         cfg.ps,cfg.npatches,cfg.nneigh)
+            # -- get patches --
+            pnoisy,pclean = imgs2patches(noisy,clean,cfg.noise_level,cfg.ps,
+                                         cfg.npatches,cfg.nsearch)
 
-            # -- shape for net --
-            inputs = rearrange(pnoisy,'b np nn t c h w -> (b np) nn (t c) h w')
-            target = rearrange(pclean[:,:,0,:1],'b np t c h w -> (b np) (t c) h w')
+            # -- create inputs and outputs --
+            inputs,targets = io_patches(pnoisy,pclean,cfg.noise_level,cfg.ps,cfg.nneigh)
 
             #
             # -- denoise image --
@@ -169,7 +167,7 @@ def test_loop(cfg,model,test_loader,loss_fxn):
             else: pdeno,denoised_frames = output,None
 
             # -- compute gt loss --
-            loss = loss_fxn(pdeno,target,denoised_frames,cfg.global_step)
+            loss = loss_fxn(pdeno,targets,denoised_frames,cfg.global_step)
 
             # -- log info --
             info = get_test_log_info(cfg,model,loss,pdeno,pnoisy,pclean)

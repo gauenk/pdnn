@@ -28,14 +28,14 @@ class SepConvFM2D(nn.Module):
     def __init__(self, l_ind):
         super(SepConvFM2D, self).__init__()
 
-        self.f_in = 6
+        self.f_in = 9
         # if 0 == l_ind:
         #     self.f_in = 150
         # else:
         #     self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
 
         # self.f_out = max(math.ceil(self.f_in / 2), 150)
-        self.f_out = 6
+        self.f_out = 9
         self.n_in = math.ceil(15 / (2 ** l_ind))
         self.n_out = math.ceil(self.n_in / 2)
 
@@ -66,15 +66,15 @@ class SepConvFM2D(nn.Module):
 
 
 class SepConvOut2D(nn.Module):
-    def __init__(self, l_ind):
+    def __init__(self, l_ind, out_c=6):
         super(SepConvOut2D, self).__init__()
 
-        self.f_in = 6
+        self.f_in = 9
         # self.f_in = max(math.ceil(150 / (2 ** l_ind)), 150)
         self.vh_groups = self.f_in // 3
         self.conv_vh = nn.Conv2d(in_channels=self.f_in, out_channels=self.f_in,
                                  kernel_size=(7, 7), bias=False, groups=self.vh_groups)
-        self.conv_f = nn.Conv2d(in_channels=self.f_in, out_channels=3,
+        self.conv_f = nn.Conv2d(in_channels=self.f_in, out_channels=out_c,
                                 kernel_size=(1, 1), bias=False)
 
     def forward(self, x):
@@ -126,7 +126,7 @@ class SepConvOutB2D(nn.Module):
         super(SepConvOutB2D, self).__init__()
 
         self.sep_conv = SepConvOut2D(l_ind)
-        self.b = nn.Parameter(torch.zeros((1, 3, 1, 1), dtype=torch.float32))
+        self.b = nn.Parameter(torch.zeros((1, 6, 1, 1), dtype=torch.float32))
 
     def forward(self, x):
         x = self.sep_conv(x)

@@ -27,7 +27,7 @@ def get_train_log_info(cfg,model,loss,pdeno,pnoisy,pclean):
 
     # -- create ref --
     nimages,npatches,nneigh,pt,c,ph,pw = pclean.shape
-    ref = rearrange(pclean[:,:,0,0],'b p c h w -> (b p) c h w')
+    ref = rearrange(pclean[:,:,0,:],'b p t c h w -> (b p) (t c) h w')
 
     # -- image psnrs --
     image_psnrs = images_to_psnrs(pdeno,ref-0.5)
@@ -47,7 +47,7 @@ def get_test_log_info(cfg,model,loss,pdeno,pnoisy,pclean):
 
     # -- create ref --
     nimages,npatches,nneigh,pt,c,ph,pw = pclean.shape
-    ref = rearrange(pclean[:,:,0,0],'b p c h w -> (b p) c h w')
+    ref = rearrange(pclean[:,:,0,:],'b p t c h w -> (b p) (t c) h w')
 
     # -- image psnrs --
     image_psnrs = images_to_psnrs(pdeno,ref-0.5)
